@@ -254,7 +254,7 @@ public class MongoDBRiver extends AbstractRiverComponent implements River {
         }
     }
 
-    private boolean isMongos() {
+    private boolean isMongos() throws UnknownHostException {
         DB adminDb = getAdminDb();
         if (adminDb == null) {
             return false;

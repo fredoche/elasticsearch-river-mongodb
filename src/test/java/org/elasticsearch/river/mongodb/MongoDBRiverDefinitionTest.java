@@ -47,6 +47,35 @@ public class MongoDBRiverDefinitionTest {
             Assert.fail("testLoadMongoDBRiverSimpleDefinition failed", t);
         }
     }
+    
+    @Test
+    public void testLoadMongoDBRiverCollectionsDefinition() {
+        try {
+            RiverName riverName = new RiverName("mongodb", "mongodb-" + System.currentTimeMillis());
+            InputStream in = getClass().getResourceAsStream("/org/elasticsearch/river/mongodb/test-mongodb-river-collections-definition.json");
+            RiverSettings riverSettings = new RiverSettings(ImmutableSettings.settingsBuilder().build(), XContentHelper.convertToMap(
+                    Streams.copyToByteArray(in), false).v2());
+            ScriptService scriptService = null;
+            MongoDBRiverDefinition definition = MongoDBRiverDefinition.parseSettings(riverName.name(),
+                    RiverIndexName.Conf.DEFAULT_INDEX_NAME, riverSettings, scriptService);
+            Assert.assertNotNull(definition);
+            Assert.assertEquals("mydbplop", definition.getMongoDb());
+            Assert.assertTrue(definition.getMongoCollections().contains("mycollection1"));
+            Assert.assertTrue(definition.getMongoCollections().contains("mycollection2"));
+            Assert.assertEquals("myindexplop", definition.getIndexName());
+
+            // Test default bulk values
+            Assert.assertEquals(MongoDBRiverDefinition.DEFAULT_BULK_ACTIONS, definition.getBulk().getBulkActions());
+            Assert.assertEquals(MongoDBRiverDefinition.DEFAULT_CONCURRENT_REQUESTS, definition.getBulk().getConcurrentRequests());
+            Assert.assertEquals(MongoDBRiverDefinition.DEFAULT_BULK_SIZE, definition.getBulk().getBulkSize());
+            Assert.assertEquals(MongoDBRiverDefinition.DEFAULT_FLUSH_INTERVAL, definition.getBulk().getFlushInterval());
+            Assert.assertFalse(definition.isSkipInitialImport());
+            Assert.assertFalse(definition.isStoreStatistics());
+
+        } catch (Throwable t) {
+            Assert.fail("testLoadMongoDBRiverSimpleDefinition failed", t);
+        }
+    }
 
     @Test
     public void testLoadMongoDBRiverDefinition() {

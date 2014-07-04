@@ -83,6 +83,7 @@ public class MongoDBRiverDefinition {
     public final static String SCRIPT_FIELD = "script";
     public final static String SCRIPT_TYPE_FIELD = "script_type";
     public final static String COLLECTION_FIELD = "collection";
+    public final static String COLLECTIONS_FIELD = "collections";
     public final static String GRIDFS_FIELD = "gridfs";
     public final static String INDEX_OBJECT = "index";
     public final static String NAME_FIELD = "name";
@@ -109,6 +110,7 @@ public class MongoDBRiverDefinition {
     // mongodb
     private final String mongoDb;
     private final String mongoCollection;
+    private final Set<String> mongoCollections;
     private final boolean mongoGridFS;
     private final BasicDBObject mongoOplogFilter;
     private final BasicDBObject mongoCollectionFilter;
@@ -158,6 +160,7 @@ public class MongoDBRiverDefinition {
         // mongodb
         private String mongoDb;
         private String mongoCollection;
+        private Set<String> mongoCollections;
         private boolean mongoGridFS;
         private BasicDBObject mongoOplogFilter;// = new BasicDBObject();
         private BasicDBObject mongoCollectionFilter = new BasicDBObject();
@@ -218,6 +221,11 @@ public class MongoDBRiverDefinition {
 
         public Builder mongoCollection(String mongoCollection) {
             this.mongoCollection = mongoCollection;
+            return this;
+        }
+        
+        public Builder mongoCollections(Set<String> mongoCollections) {
+            this.mongoCollections = mongoCollections;
             return this;
         }
 
@@ -702,6 +710,23 @@ public class MongoDBRiverDefinition {
                 }
                 builder.scriptType(scriptType);
             }
+            
+            if (mongoSettings.containsKey(COLLECTIONS_FIELD)) {
+                Set<String> collections = new HashSet<String>();
+                Object collectionsSettings = mongoSettings.get(COLLECTIONS_FIELD);
+                logger.debug("collectionsSettings: " + collectionsSettings);
+                boolean array = XContentMapValues.isArray(collectionsSettings);
+
+                if (array) {
+                    ArrayList<String> fields = (ArrayList<String>) collectionsSettings;
+                    for (String field : fields) {
+                        logger.debug("collectionsSettings-collection: " + field);
+                        collections.add(field);
+                    }
+                }
+
+                builder.mongoCollections(collections);
+            }
         } else {
             mongoHost = DEFAULT_DB_HOST;
             mongoPort = DEFAULT_DB_PORT;
@@ -831,6 +856,7 @@ public class MongoDBRiverDefinition {
         // mongodb
         this.mongoDb = builder.mongoDb;
         this.mongoCollection = builder.mongoCollection;
+        this.mongoCollections = builder.mongoCollections;
         this.mongoGridFS = builder.mongoGridFS;
         this.mongoOplogFilter = builder.mongoOplogFilter;
         this.mongoCollectionFilter = builder.mongoCollectionFilter;
@@ -890,6 +916,10 @@ public class MongoDBRiverDefinition {
 
     public String getMongoCollection() {
         return mongoCollection;
+    }
+    
+    public Set<String> getMongoCollections() {
+        return mongoCollections;
     }
 
     public boolean isMongoGridFS() {

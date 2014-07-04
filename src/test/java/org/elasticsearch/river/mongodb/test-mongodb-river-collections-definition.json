@@ -1,0 +1,11 @@
+{
+	"type": "mongodb",
+	"mongodb": {
+		"db": "mydbplop",
+		"collections": ["mycollection1", "mycollection2"],
+		gridfs: false
+	},
+	index: {
+		name: "myindexplop"
+	}
+}
